@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Spinner</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { margin-top: 20px; }
+        #addAnimal, #spinBtn, #resetBtn { margin: 10px; padding: 10px 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <h1>Animal Spinner</h1>
+    <input type="text" id="animalInput" placeholder="Enter animal name">
+    <button id="addAnimal">Add Animal</button>
+    <button id="resetBtn">Reset Spinner</button>
+    <canvas id="spinnerCanvas" width="400" height="400"></canvas>
+    <button id="spinBtn">Spin</button>
+
+    <script>
+        const canvas = document.getElementById("spinnerCanvas");
+        const ctx = canvas.getContext("2d");
+        let animals = JSON.parse(localStorage.getItem("animals")) || ["Lion", "Tiger", "Elephant", "Giraffe"];
+        let spinning = false;
+        let selectedAnimal = null;
+
+        function drawWheel() {
+            const numAnimals = animals.length;
+            const arcSize = (2 * Math.PI) / numAnimals;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            animals.forEach((animal, index) => {
+                ctx.beginPath();
+                ctx.moveTo(200, 200);
+                ctx.arc(200, 200, 180, index * arcSize, (index + 1) * arcSize);
+                ctx.fillStyle = `hsl(${(index * 360) / numAnimals}, 70%, 60%)`;
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = "#000";
+                ctx.font = "18px Arial";
+                ctx.fillText(animal, 180 + Math.cos(arcSize * (index + 0.5)) * 140, 
+                                     200 + Math.sin(arcSize * (index + 0.5)) * 140);
+            });
+
+            ctx.beginPath();
+            ctx.moveTo(190, 30);
+            ctx.lineTo(210, 30);
+            ctx.lineTo(200, 10);
+            ctx.fillStyle = "red";
+            ctx.fill();
+        }
+
+        function spinWheel() {
+            if (spinning || animals.length === 0) return;
+            spinning = true;
+            let rotations = Math.floor(Math.random() * 10 + 5) * 360;
+            let selectedIndex = Math.floor(Math.random() * animals.length);
+            let finalRotation = rotations + (selectedIndex * (360 / animals.length));
+
+            canvas.style.transform = `rotate(${finalRotation}deg)`;
+            setTimeout(() => {
+                selectedAnimal = animals[selectedIndex];
+                alert(`You got: ${selectedAnimal}!`);
+                animals.splice(selectedIndex, 1);
+                localStorage.setItem("animals", JSON.stringify(animals));
+                drawWheel();
+                spinning = false;
+                window.location.href = `info.html?animal=${selectedAnimal}`;
+            }, 3000);
+        }
+
+        document.getElementById("addAnimal").addEventListener("click", () => {
+            let animal = document.getElementById("animalInput").value.trim();
+            if (animal && !animals.includes(animal)) {
+                animals.push(animal);
+                localStorage.setItem("animals", JSON.stringify(animals));
+                drawWheel();
+            }
+            document.getElementById("animalInput").value = "";
+        });
+
+        document.getElementById("resetBtn").addEventListener("click", () => {
+            animals = ["Lion", "Tiger", "Elephant", "Giraffe"];
+            localStorage.setItem("animals", JSON.stringify(animals));
+            drawWheel();
+        });
+
+        document.getElementById("spinBtn").addEventListener("click", spinWheel);
+
+        drawWheel();
+    </script>
+
+</body>
+</html>
