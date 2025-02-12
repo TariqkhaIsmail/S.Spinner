@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Info</title>
+</head>
+<body>
+    <h1 id="animalName"></h1>
+    <input type="file" id="uploadFile" accept="image/*,video/*">
+    <button onclick="showFile()">Upload</button>
+    <div id="display"></div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById("animalName").innerText = "Info about: " + params.get("animal");
+
+        function showFile() {
+            let file = document.getElementById("uploadFile").files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let display = document.getElementById("display");
+                    display.innerHTML = file.type.startsWith("image") ? 
+                        `<img src="${e.target.result}" width="300">` : 
+                        `<video controls width="300"><source src="${e.target.result}"></video>`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
